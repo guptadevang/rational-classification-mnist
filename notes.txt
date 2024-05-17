@@ -57,3 +57,8 @@ Y: [ 23.64052346  10.7536382   17.34109885  30.81389067  27.98136503
  305.91697135 304.41904979 327.68515122 316.65755068 325.01989363]
 Initial random parameters: [0.63125003 0.92525629 0.02992991 0.08834875 0.77209999]
 Optimized parameters: [0.68226351 0.96139464 0.03800957 0.00132555 0.22331625]
+
+
+
+Bi-section method we ahve two values top and bottom. Is there an a such that l of a is equal to l.
+we find new top and bottom boundary and we slowly reduce the l of a util we reach a minimum value.

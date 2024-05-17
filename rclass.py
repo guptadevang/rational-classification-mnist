@@ -24,10 +24,11 @@ def rational(params, x, y):
     return np.sum(residuals**10)
 
 # Generate data
-x, y = generate_data(100, noise_level=0.5)
+x, y = generate_data(10, noise_level=0.01)
 
 # Generate random initial parameters
-initial_params = np.random.normal(0, 1, 5) 
+#initial_params = np.random.normal(0, 1, 5) 
+initial_params = np.array([1, 1, 1, 1, 1])
 
 # Rational fitting
 result = minimize(rational, initial_params, args=(x, y), method='BFGS')
