@@ -6,7 +6,6 @@ import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import time
 from scipy.optimize import minimize
-import pandas as pd
 
 # Configure Matplotlib to use xelatex
 mpl.rcParams.update({
@@ -28,6 +27,8 @@ x1_points = x1_points.flatten()
 x2_points = x2_points.flatten()
 x_points = np.vstack((x1_points, x2_points))
 
+# The below code showcases that the rational equation being used is based on alpha numerator & denominator values.
+# Since, the input values of alpha numerator & denominator will generate the rational function.
 # It calculates y values using the function f(x)
 y_points = f(x_points)
 
@@ -47,16 +48,16 @@ def generate_rational_function(alpha_num, alpha_den, n):
     numerator = 0
     for idx in p_indices:
         term = 1
-        for I, exp in enumerate(idx):
-            term *= variables[I]**exp
+        for i, exp in enumerate(idx):
+            term *= variables[i]**exp
         idx_str = ''.join(map(str, idx))
         numerator += sp.symbols(f'p{idx_str}') * term
 
     denominator = 0
     for idx in q_indices:
         term = 1
-        for I, exp in enumerate(idx):
-            term *= variables[I]**exp
+        for i, exp in enumerate(idx):
+            term *= variables[i]**exp
         idx_str = ''.join(map(str, idx))
         denominator += sp.symbols(f'q{idx_str}') * term
 
@@ -64,9 +65,10 @@ def generate_rational_function(alpha_num, alpha_den, n):
     return rational_function, p_indices, q_indices, variables
 
 # Adjust degrees and order for numerator and denominator of the rational function
-alpha_num = 2
-alpha_den = 1
+alpha_num = 5
+alpha_den = 4
 n = 2
+########
 
 rational_function, p_indices, q_indices, variables = generate_rational_function(alpha_num, alpha_den, n)
 print("Generated rational function:")
@@ -78,8 +80,8 @@ def difference_function(x, params):
     p = params[:len(p_indices)]
     q = params[len(p_indices):]
     
-    num = sum([p[I] * (x1**idx[0]) * (x2**idx[1]) for I, idx in enumerate(p_indices)])
-    den = sum([q[I] * (x1**idx[0]) * (x2**idx[1]) for I, idx in enumerate(q_indices)])
+    num = sum([p[i] * (x1**idx[0]) * (x2**idx[1]) for i, idx in enumerate(p_indices)])
+    den = sum([q[i] * (x1**idx[0]) * (x2**idx[1]) for i, idx in enumerate(q_indices)])
     
     rational_val = num / den
     actual_val = f((x1, x2))
@@ -90,8 +92,8 @@ def difference_function(x, params):
 
 def total_difference(params, x_points, y_points):
     total_diff = 0
-    for I in range(x_points.shape[1]):
-        _, diff = difference_function((x_points[0, I], x_points[1, I]), params)
+    for i in range(x_points.shape[1]):
+        _, diff = difference_function((x_points[0, i], x_points[1, i]), params)
         total_diff += diff
     
     return total_diff
@@ -108,24 +110,27 @@ def coordinate_bisection(params, x_points, y_points, tol=1e-15, max_iter=10000, 
     n_params = len(params)
     previous_total_diff = total_difference(params, x_points, y_points)
     errors_bisection = [previous_total_diff]
+    iteration_times = []
     for iteration in range(max_iter):
-        for I in range(n_params):
+        iter_start_time = time.time()
+        for i in range(n_params):
             l, u = 0, 1
             while (u - l) / 2 > tol:
                 midpoint = (l + u) / 2
                 params_left = params.copy()
-                params_left[I] = midpoint - tol
+                params_left[i] = midpoint - tol
                 params_right = params.copy()
-                params_right[I] = midpoint + tol
+                params_right[i] = midpoint + tol
 
                 if total_difference(params_left, x_points, y_points) < total_difference(params_right, x_points, y_points):
                     u = midpoint
                 else:
                     l = midpoint
-            params[I] = (l + u) / 2
+            params[i] = (l + u) / 2
         
         current_total_diff = total_difference(params, x_points, y_points)
         errors_bisection.append(current_total_diff)
+        iteration_times.append(time.time() - iter_start_time)
         if abs(previous_total_diff - current_total_diff) < convergence_threshold:
             end_time = time.time()
             print(f"Convergence reached after {iteration + 1} iterations for bisection method.")
@@ -133,19 +138,22 @@ def coordinate_bisection(params, x_points, y_points, tol=1e-15, max_iter=10000, 
             break
         previous_total_diff = current_total_diff
 
-    return params, errors_bisection
+    return params, errors_bisection, iteration_times
 
 
 # Optimized parameters using the BFGS method
 def bfgs_optimization(params, x_points, y_points, convergence_threshold=1e-6):
     start_time = time.time()
     errors_bfgs = []
+    iteration_times = []
     previous_error = total_difference(params, x_points, y_points)
 
     def callback(xk):
         nonlocal previous_error
+        iter_start_time = time.time()
         error = total_difference(xk, x_points, y_points)
         errors_bfgs.append(error)
+        iteration_times.append(time.time() - iter_start_time)
         if abs(previous_error - error) < convergence_threshold:
             return True
         previous_error = error
@@ -154,14 +162,14 @@ def bfgs_optimization(params, x_points, y_points, convergence_threshold=1e-6):
     end_time = time.time()
     print(f"Convergence reached after {result.nit} iterations for BFGS.")
     print(f"Time taken to converge for BFGS is: {end_time - start_time:.4f} seconds")
-    return result.x, errors_bfgs
+    return result.x, errors_bfgs, iteration_times
 
 # Initial guess for the parameters
 initial_params = generate_initial_params(p_indices, q_indices)
 
 # Optimized parameters
-optimized_params_bisection, errors_bisection = coordinate_bisection(initial_params.copy(), x_points, y_points)
-optimized_params_bfgs, errors_bfgs = bfgs_optimization(initial_params.copy(), x_points, y_points)
+optimized_params_bisection, errors_bisection, iteration_times_bisection = coordinate_bisection(initial_params.copy(), x_points, y_points)
+optimized_params_bfgs, errors_bfgs, iteration_times_bfgs = bfgs_optimization(initial_params.copy(), x_points, y_points)
 
 print("Initial parameters:")
 print(initial_params)
@@ -177,19 +185,19 @@ def optimized_rational_function(x, params):
     p = params[:len(p_indices)]
     q = params[len(p_indices):]
     
-    num = sum([p[I] * (x1**idx[0]) * (x2**idx[1]) for I, idx in enumerate(p_indices)])
-    den = sum([q[I] * (x1**idx[0]) * (x2**idx[1]) for I, idx in enumerate(q_indices)])
+    num = sum([p[i] * (x1**idx[0]) * (x2**idx[1]) for i, idx in enumerate(p_indices)])
+    den = sum([q[i] * (x1**idx[0]) * (x2**idx[1]) for i, idx in enumerate(q_indices)])
     
     rational_val1 = num / den
     
     return rational_val1
 
 
-initial_y_points = np.array([optimized_rational_function((x1_points[I], x2_points[I]), initial_params) for I in range(len(x1_points))])
+initial_y_points = np.array([optimized_rational_function((x1_points[i], x2_points[i]), initial_params) for i in range(len(x1_points))])
 
 # Optimized y points
-optimized_y_points_bisection = np.array([optimized_rational_function((x1_points[I], x2_points[I]), optimized_params_bisection) for I in range(len(x1_points))])
-optimized_y_points_bfgs = np.array([optimized_rational_function((x1_points[I], x2_points[I]), optimized_params_bfgs) for I in range(len(x1_points))])
+optimized_y_points_bisection = np.array([optimized_rational_function((x1_points[i], x2_points[i]), optimized_params_bisection) for i in range(len(x1_points))])
+optimized_y_points_bfgs = np.array([optimized_rational_function((x1_points[i], x2_points[i]), optimized_params_bfgs) for i in range(len(x1_points))])
 
 sse_bisection = np.sum((optimized_y_points_bisection - y_points)**2)
 sse_bfgs = np.sum((optimized_y_points_bfgs - y_points)**2)
@@ -207,76 +215,24 @@ print(f"Mean Squared Error (MSE) for BFGS: {mse_bfgs:.10e}")
 # Final differences
 print("Initial vs Optimized differences (Bisection):")
 optimized_differences_bisection = []
-
-# Initialize lists to store data
-points = []
-initial_values = []
-optimized_values = []
-actual_values = []
-differences = []
-
 for i in range(len(x1_points)):
     initial_val1 = initial_y_points[i]
     optimized_val = optimized_y_points_bisection[i]
     actual_val = y_points[i]
     difference = (optimized_val - actual_val)**10
     optimized_differences_bisection.append(difference)
-    
-    point_str = f"({x1_points[i]:.2f}, {x2_points[i]:.2f})"
-    points.append(point_str)
-    initial_values.append(initial_val1)
-    optimized_values.append(optimized_val)
-    actual_values.append(actual_val)
-    differences.append(difference)
+    print(f"Point ({x1_points[i]:.2f}, {x2_points[i]:.2f}): Initial Rational Value = {initial_val1:.10e}, Optimized Rational Value = {optimized_val:.10e}, Actual Value = {actual_val:.10e}, Difference = {difference:.10e}")
 
-df = pd.DataFrame({
-    "Point": points,
-    "Initial Rational Value": initial_values,
-    "Optimized Rational Value": optimized_values,
-    "Actual Value": actual_values,
-    "Difference": differences
-})
-
-df.to_csv("optimized_differences_bisection.csv", index=False)
-print(df.to_csv(index=False))
-print(df.to_string(index=False))
-  
-    
 # Final differences
 print("Initial vs Optimized differences (BFGS):")
 optimized_differences_bfgs = []
-
-points_bfgs = []
-initial_values_bfgs = []
-optimized_values_bfgs = []
-actual_values_bfgs = []
-differences_bfgs = []
-
 for i in range(len(x1_points)):
     initial_val2 = initial_y_points[i]
     optimized_val = optimized_y_points_bfgs[i]
     actual_val = y_points[i]
     difference = (optimized_val - actual_val)**10
     optimized_differences_bfgs.append(difference)
-    
-    point_str = f"({x1_points[i]:.2f}, {x2_points[i]:.2f})"
-    points_bfgs.append(point_str)
-    initial_values_bfgs.append(initial_val2)
-    optimized_values_bfgs.append(optimized_val)
-    actual_values_bfgs.append(actual_val)
-    differences_bfgs.append(difference)
-
-df_bfgs = pd.DataFrame({
-    "Point": points_bfgs,
-    "Initial Rational Value": initial_values_bfgs,
-    "Optimized Rational Value": optimized_values_bfgs,
-    "Actual Value": actual_values_bfgs,
-    "Difference": differences_bfgs
-})
-
-df_bfgs.to_csv("optimized_differences_bfgs.csv", index=False)
-print(df_bfgs.to_csv(index=False))
-
+    print(f"Point ({x1_points[i]:.2f}, {x2_points[i]:.2f}): Initial Rational Value = {initial_val2:.10e}, Optimized Rational Value = {optimized_val:.10e}, Actual Value = {actual_val:.10e}, Difference = {difference:.10e}")
 
 # Plot for Bisection method
 fig = plt.figure(figsize=(6, 6))
@@ -285,7 +241,7 @@ sc_bisection = ax.scatter(x1_points, x2_points, optimized_y_points_bisection, c=
 ax.set_xlabel('x1')
 ax.set_ylabel('x2')
 ax.set_zlabel('Optimized y points of function f(x)')
-ax.set_title(r'Optimized f(x) values using bisection method')
+ax.set_title(r'Optimized y values using bisection method')
 fig.colorbar(sc_bisection, ax=ax, format='%.2e')
 fig.savefig('pgfs/optimized_y_points_bisection.pgf', bbox_inches='tight')
 plt.show()
@@ -297,74 +253,91 @@ sc_bfgs = ax.scatter(x1_points, x2_points, optimized_y_points_bfgs, c=optimized_
 ax.set_xlabel('x1')
 ax.set_ylabel('x2')
 ax.set_zlabel('Optimized y points of function f(x)')
-ax.set_title(r'Optimized f(x) values using BFGS method')
+ax.set_title(r'Optimized y values using BFGS method')
 fig.colorbar(sc_bfgs, ax=ax, format='%.2e')
 fig.savefig('pgfs/optimized_y_points_bfgs.pgf', bbox_inches='tight')
 plt.show()
 
-plt.figure(figsize=(6, 3))
+plt.figure(figsize=(6, 3.6))
 plt.plot(errors_bisection, label='Bisection Method')
 plt.plot(errors_bfgs, label='BFGS Method')
 plt.xlabel('Number of iterations')
-plt.ylabel('Final difference \([(r(x)-f(x)^{10})]\)')
+plt.ylabel('Final difference (r(x)-y)^10')
 plt.yscale('log')
-plt.title('Final difference at each iteration for both bisection \& BFGS methods')
+plt.title('Final difference at each iteration for both Bisection & BFGS Methods')
 plt.legend()
 plt.grid(True)
 plt.savefig('pgfs/final_difference_iterations.pgf', bbox_inches='tight')
 plt.show()
 
-plt.figure(figsize=(6, 3))
+plt.figure(figsize=(6, 3.6))
 plt.plot(y_points, np.abs(optimized_y_points_bisection - y_points), 'o', label='Bisection method')
 plt.xlabel('y value [f(x)]')
 plt.ylabel('Error difference of f(x)')
-plt.title('Error difference of f(x) using Bisection method')
+plt.title('Error difference of y using Bisection Method')
 plt.legend()
 plt.grid(True)
 plt.savefig('pgfs/error_difference_bisection.pgf', bbox_inches='tight')
 plt.show()
 
-plt.figure(figsize=(6, 3))
+plt.figure(figsize=(6, 3.6))
 plt.plot(y_points, np.abs(optimized_y_points_bfgs - y_points), 's', label='BFGS Method')
 plt.xlabel('y value [f(x)]')
 plt.ylabel('Error difference of f(x)')
-plt.title('Error difference of f(x) using BFGS method')
+plt.title('Error difference of f(x) using BFGS Method')
 plt.legend()
 plt.grid(True)
-plt.savefig('pgfs/error_difference_bfgs.pgf', bbox_inches='tight')
+plt.savefig('pgfs/error_difference.pgf', bbox_inches='tight')
 plt.show()
 
-plt.figure(figsize=(6, 3))
+plt.figure(figsize=(6, 3.6))
 plt.plot(np.abs(optimized_differences_bisection), 'o', label='Optimized difference of Bisection')
 plt.plot(np.abs(optimized_differences_bisection), 'r', label='Bisection method')
 plt.xlabel('Number of points')
-plt.ylabel('Final difference [(r(x)-f(x)^10)]')
-plt.title('Optimized differences of bisection method')
+plt.ylabel('Final difference (r(x)-y)^10')
+plt.title('Optimized differences of bisection Method')
 plt.legend()
 plt.grid(True)
 plt.savefig('pgfs/optimized_differences_bisection.pgf', bbox_inches='tight')
 plt.show()
 
-plt.figure(figsize=(6, 3))
+plt.figure(figsize=(6, 3.6))
 plt.plot(np.abs(optimized_differences_bfgs), 's', label='Optimized difference of BFGS')
 plt.plot(np.abs(optimized_differences_bfgs), 'y', label='BFGS method')
 plt.xlabel('Number of points')
-plt.ylabel('Final difference [(r(x)-f(x)^10)]')
-plt.title('Optimized differences of BFGS method')
+plt.ylabel('Final difference (r(x)-y)^10')
+plt.title('Optimized differences of BFGS Method')
 plt.legend()
 plt.grid(True)
 plt.savefig('pgfs/optimized_differences_bfgs.pgf', bbox_inches='tight')
 plt.show()
 
-plt.figure(figsize=(6, 3))
+plt.figure(figsize=(6, 3.6))
 plt.plot(np.abs(optimized_differences_bisection), 'o', label='Bisection method')
 plt.plot(np.abs(optimized_differences_bisection), 'r', label='Bisection method')
 plt.plot(np.abs(optimized_differences_bfgs), 's', label='BFGS method')
 plt.plot(np.abs(optimized_differences_bfgs), 'y', label='BFGS method')
 plt.xlabel('Number of points')
-plt.ylabel('Final difference [(r(x)-f(x)^10)]')
-plt.title('Optimized differences of bisection \& BFGS method')
+plt.ylabel('Final difference (r(x)-y)^10')
+plt.title('Optimized differences of Bisection & BFGS Method')
 plt.legend()
 plt.grid(True)
 plt.savefig('pgfs/optimized_differences.pgf', bbox_inches='tight')
+plt.show()
+
+bisection_iterations = range(len(iteration_times_bisection))
+bisection_times = np.cumsum(iteration_times_bisection)
+
+bfgs_iterations = range(len(iteration_times_bfgs))
+bfgs_times = np.cumsum(iteration_times_bfgs)
+
+plt.figure(figsize=(6, 3.6))
+plt.plot(bisection_iterations, bisection_times, label='Bisection Method', marker='o')
+plt.plot(bfgs_iterations, bfgs_times, label='BFGS Method', marker='s')
+plt.xlabel('Number of iterations')
+plt.ylabel('Time taken to converge (seconds)')
+plt.title('Number of iterations vs Time taken to converge')
+plt.legend()
+plt.grid(True)
+plt.savefig('pgfs/iterations_vs_time.pgf', bbox_inches='tight')
 plt.show()
