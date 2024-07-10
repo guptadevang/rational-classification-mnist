@@ -27,8 +27,6 @@ x1_points = x1_points.flatten()
 x2_points = x2_points.flatten()
 x_points = np.vstack((x1_points, x2_points))
 
-# The below code showcases that the rational equation being used is based on alpha numerator & denominator values.
-# Since, the input values of alpha numerator & denominator will generate the rational function.
 # It calculates y values using the function f(x)
 y_points = f(x_points)
 
@@ -68,7 +66,6 @@ def generate_rational_function(alpha_num, alpha_den, n):
 alpha_num = 5
 alpha_den = 4
 n = 2
-########
 
 rational_function, p_indices, q_indices, variables = generate_rational_function(alpha_num, alpha_den, n)
 print("Generated rational function:")
@@ -240,7 +237,7 @@ ax = fig.add_subplot(111, projection='3d')
 sc_bisection = ax.scatter(x1_points, x2_points, optimized_y_points_bisection, c=optimized_y_points_bisection, cmap='plasma', marker='o')
 ax.set_xlabel('x1')
 ax.set_ylabel('x2')
-ax.set_zlabel('Optimized y points of function f(x)')
+ax.set_zlabel('Optimized y points')
 ax.set_title(r'Optimized y values using bisection method')
 fig.colorbar(sc_bisection, ax=ax, format='%.2e')
 fig.savefig('pgfs/optimized_y_points_bisection.pgf', bbox_inches='tight')
@@ -252,7 +249,7 @@ ax = fig.add_subplot(111, projection='3d')
 sc_bfgs = ax.scatter(x1_points, x2_points, optimized_y_points_bfgs, c=optimized_y_points_bfgs, cmap='cool', marker='o')
 ax.set_xlabel('x1')
 ax.set_ylabel('x2')
-ax.set_zlabel('Optimized y points of function f(x)')
+ax.set_zlabel('Optimized y points')
 ax.set_title(r'Optimized y values using BFGS method')
 fig.colorbar(sc_bfgs, ax=ax, format='%.2e')
 fig.savefig('pgfs/optimized_y_points_bfgs.pgf', bbox_inches='tight')
@@ -272,8 +269,8 @@ plt.show()
 
 plt.figure(figsize=(6, 3.6))
 plt.plot(y_points, np.abs(optimized_y_points_bisection - y_points), 'o', label='Bisection method')
-plt.xlabel('y value [f(x)]')
-plt.ylabel('Error difference of f(x)')
+plt.xlabel('y value')
+plt.ylabel('Error difference of y')
 plt.title('Error difference of y using Bisection Method')
 plt.legend()
 plt.grid(True)
@@ -282,9 +279,9 @@ plt.show()
 
 plt.figure(figsize=(6, 3.6))
 plt.plot(y_points, np.abs(optimized_y_points_bfgs - y_points), 's', label='BFGS Method')
-plt.xlabel('y value [f(x)]')
-plt.ylabel('Error difference of f(x)')
-plt.title('Error difference of f(x) using BFGS Method')
+plt.xlabel('y value')
+plt.ylabel('Error difference of y')
+plt.title('Error difference of y using BFGS Method')
 plt.legend()
 plt.grid(True)
 plt.savefig('pgfs/error_difference.pgf', bbox_inches='tight')
