@@ -9,10 +9,10 @@ $$
 ## One Dimensional Analysis
 
 ### Bisection
-![fit_comparision.png](images/fit_comparision.png)
+![one_plot_bisection.png](images/one_plot_bisection.png)
 
 ### BFGS
-![fit_comparision.png](images/fit_comparision.png)
+![one_plot_bfgs.png](images/one_plot_bfgs.png)
 
 
 

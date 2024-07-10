@@ -1,0 +1,33 @@
+# Ignore the pgfs folder
+pgfs/
+results/
+
+# Ignore temporary files
+src/temp.py
+src/rclass.py
+src/plot_results.py
+notes.txt
+
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Ignore environment and package manager files
+.env
+.venv/
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignore IDE/editor config files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
