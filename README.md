@@ -1,7 +1,30 @@
-# Rational-Function-Classification
+# Rational-Classification
 
-## Function
-![Function.png](images/Function.png)
+## Optimization Problem
 
-## Fitted Curve
+$$
+\min_{a_i, b_i} \max_{i=1,\ldots,N} \left| y_i - \frac{p(x_i)}{q(x_i)} \right| = \left| y_i - \frac{\sum_{k=0}^{n} a_n x_{i,1}^{\alpha_1} x_{i,2}^{\alpha_2} }{\sum_{k=0}^{n} b_n x_{i,1}^{\beta_1} x_{i,2}^{\beta_2} } \right|
+$$
+
+## One Dimensional Analysis
+
+### Bisection
 ![fit_comparision.png](images/fit_comparision.png)
+
+### BFGS
+![fit_comparision.png](images/fit_comparision.png)
+
+
+
+## Multivariate Analysis
+
+
+### Bisection
+
+
+### BFGS
+
+
+### Convergence Metrics
+
+
