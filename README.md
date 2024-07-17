@@ -2,9 +2,9 @@
 
 ## Contributors
 
-Devang Gupta
-Nayeemuddin Mohammed
-Shivakiran Nandala
+### Devang Gupta
+### Nayeemuddin Mohammed
+### Shivakiran Nandala
 
 
 ## Optimization Problem
