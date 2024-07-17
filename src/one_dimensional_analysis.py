@@ -81,7 +81,7 @@ plt.plot(x, y_fit_bisect, label='Fitted Rational Function (Bisection)', linestyl
 plt.scatter(x_points, y_points, color='red', s=10, label='Equidistant points')
 
 # Set the limits for the x and y axes
-plt.xlim([-7.5, -2.5])
+plt.xlim([-7.5, 5])
 plt.ylim([-20000, 20000])
 
 plt.xlabel('x')
