@@ -1,6 +1,6 @@
 # Rational-Classification
 
-Please find the detailed report about the study [here](RClass_Report.pdf)
+Please find the detailed report about the study [here](RClass_Report.pdf).
 
 
 ## Collaborators
