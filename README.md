@@ -15,12 +15,15 @@ r(x) = \frac{p(x)}{q(x)} = \frac{\sum_{|\alpha| \leq \alpha_{\text{num}}}^n p_{\
 $$
                 
 Here,
+
 $$
 r: \mathbb{R}^2 \rightarrow \mathbb{R}
 $$
+
 $$
 |\alpha| = \alpha_1 + \alpha_2
 $$
+
 $$
 x^{\alpha} = x_1^{\alpha_1} x_2^{\alpha_2}
 $$
