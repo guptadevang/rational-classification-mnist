@@ -48,12 +48,17 @@ $$
 ## Multivariate Results
 
 
-### Bisection
+### Convergence Time
+![alpha_convergence_time.png](images/alpha_convergence_time.png)
 
+### Number of Iterations
+![alpha_num_iterations.png](images/alpha_num_iterations.png)
 
-### BFGS
+### Mean Squared Errors
+![alpha_mse.png](images/alpha_mse.png)
 
+### Sum of Squared Errors
+![alpha_sse.png](images/alpha_sse.png)
 
-### Convergence Metrics
 
 
